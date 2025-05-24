@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Ozon Feed Processor</title>
+  <style>
+    #progress-bar { width:100%; background:#eee; height:20px; margin:10px 0; }
+    #progress-fill { height:100%; background:green; width:0%; }
+    .decision { border:1px solid #ccc; padding:10px; margin:10px 0; }
+    .options { margin:5px 0; }
+    .paused-indicator { color: red; font-weight: bold; }
+    .waiting-decision { background-color: #fffce0; border: 2px solid #ff9900; padding: 15px; }
+  </style>
+</head>
+<body>
+  <h1>Ozon Feed Processor</h1>
+  <button id="start-btn">Start</button>
+  <div>Status: <span id="status">idle</span></div>
+  <div id="pause-indicator" class="paused-indicator" style="display:none">
+    Process paused - waiting for decision
+  </div>
+  <div id="progress-bar"><div id="progress-fill"></div></div>
+  <div id="interactive-decisions"></div>
+
+  <script>
+    const startBtn = document.getElementById('start-btn');
+    const statusEl = document.getElementById('status');
+    const fillEl = document.getElementById('progress-fill');
+    const decsEl = document.getElementById('interactive-decisions');
+    const pauseIndicator = document.getElementById('pause-indicator');
+    let polling;
+    let currentDecisionId = null;
+
+    startBtn.onclick = () => {
+      fetch('/start', { method: 'POST' })
+        .then(() => {
+          statusEl.textContent = 'running';
+          polling = setInterval(updateAll, 1000);
+        });
+    };
+
+    function updateAll() {
+      fetch('/progress')
+        .then(r => r.json())
+        .then(p => {
+          statusEl.textContent = p.status;
+          const pct = p.total ? Math.round(p.current/p.total*100) : 0;
+          fillEl.style.width = pct + '%';
+          
+          // Show/hide pause indicator
+          pauseIndicator.style.display = p.paused ? 'block' : 'none';
+          currentDecisionId = p.waiting_for_decision;
+          
+          if (p.status === 'finished') clearInterval(polling);
+        });
+      fetch('/interactive_decisions')
+        .then(r => r.json())
+        .then(renderDecisions);
+    }
+
+    function renderDecisions(decs) {
+      decsEl.innerHTML = '';
+      Object.entries(decs).forEach(([id, d]) => {
+        const div = document.createElement('div');
+        div.className = 'decision';
+        
+        // Add highlighted class if this is the current decision waiting on
+        if (id === currentDecisionId) {
+          div.classList.add('waiting-decision');
+        }
+        
+        div.innerHTML = `
+          <strong>Offer:</strong> ${d.offer_data.name}<br>
+          <strong>Top match:</strong> ${d.top_result.type_name} (similarity: ${d.similarity.toFixed(2)})<br>
+          <div class="options">
+            ${d.search_results.map((opt,i)=>
+              `<label>
+                 <input type="radio" name="opt_${id}" value="${opt.type_id}|${opt.description_category_id || opt.type_id}">
+                 ${i+1}. ${opt.type_name} (similarity: ${opt.similarity.toFixed(2)})
+               </label><br>`
+            ).join('')}
+            <label>
+              <input type="radio" name="opt_${id}" value="custom">
+              Custom values:
+            </label>
+            <div id="custom_${id}" style="display:none; margin-left:20px;">
+              Type ID: <input type="number" id="ct_${id}_type"><br>
+              Desc Cat ID: <input type="number" id="ct_${id}_desc"><br>
+            </div>
+          </div>
+          <button data-id="${id}">Submit Decision</button>
+        `;
+        decsEl.appendChild(div);
+
+        // show/hide custom inputs
+        div.querySelectorAll(`input[name=opt_${id}]`)
+           .forEach(r=>r.onchange = e=>{
+             div.querySelector(`#custom_${id}`).style.display = e.target.value==='custom'?'block':'none';
+           });
+
+        // submit handler
+        div.querySelector('button').onclick = () => {
+          const sel = div.querySelector(`input[name=opt_${id}]:checked`);
+          if(!sel) return alert('Select an option');
+          
+          let type_id, description_category_id;
+          
+          if(sel.value==='custom') {
+            type_id = +div.querySelector(`#ct_${id}_type`).value;
+            description_category_id = +div.querySelector(`#ct_${id}_desc`).value;
+            
+            if(isNaN(type_id) || isNaN(description_category_id)) {
+              return alert('Please enter valid numeric IDs');
+            }
+          } else {
+            [type_id, description_category_id] = sel.value.split('|').map(Number);
+          }
+          
+          fetch(`/interactive_decisions/${id}`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ type_id, description_category_id })
+          }).then(r=>{
+            if(r.ok) div.remove();
+            else r.json().then(e=>alert(e.error));
+          });
+        };
+      });
+    }
+  </script>
+</body>
+</html>

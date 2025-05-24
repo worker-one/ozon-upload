@@ -1,0 +1,3 @@
+# Dependencies for the ozon-api project
+fuzzywuzzy>=0.18.0
+python-Levenshtein>=0.12.2  # Optional, but provides speedup for fuzzywuzzy

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузка в Ozon</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Загрузка в Ozon</h1>
+
+        <div class="card">
+            <h2>Конфигурация</h2>
+            <div class="input-group">
+                <input type="text" id="clientId" placeholder=" " required>
+                <label for="clientId">Client ID</label>
+            </div>
+            <div class="input-group">
+                <input type="password" id="clientSecret" placeholder=" " required>
+                <label for="clientSecret">Client Secret</label>
+            </div>
+            <div class="input-group">
+                <input type="url" id="feedUrl" placeholder=" ">
+                <label for="feedUrl">URL фида XML (опционально)</label>
+            </div>
+            <div class="input-group">
+                <input type="number" id="feedOffset" value="0" placeholder=" ">
+                <label for="feedOffset">Смещение в фиде</label>
+            </div>
+            <div class="input-group">
+                <input type="number" id="maxItems" value="10" placeholder=" ">
+                <label for="maxItems">Максимум товаров для обработки</label>
+            </div>
+            <div class="input-group">
+                <input type="text" id="keywordFilter" placeholder=" ">
+                <label for="keywordFilter">Фильтр по ключевым словам (опционально)</label>
+            </div>
+            <button id="startBtn">Начать обработку</button>
+        </div>
+
+        <div id="statusArea" class="card status-card" style="display:none;">
+            <h2>Статус обработки</h2>
+            <p id="statusMessage">Ожидание</p>
+            <p>Обработано для API: <span id="processedCount">0</span> / <span id="maxConfiguredItems">0</span></p>
+            <p>Рассмотрено товаров (от смещения): <span id="consideredCount">0</span> / <span id="totalOffersInFeedSlice">0</span></p>
+            <p>Готово для Ozon: <span id="itemsReady">0</span></p>
+            <div id="errorDisplay" class="error-message" style="display:none;"></div>
+        </div>
+
+        <div id="decisionArea" class="card decision-card" style="display:none;">
+            <h2>Требуется решение</h2>
+            <p>Товар: <strong id="offerName"></strong> (ID: <span id="offerId"></span>)</p>
+            <p>Лучшее совпадение: <span id="similarityScore"></span></p>
+            <h3>Предлагаемые категории:</h3>
+            <ul id="suggestionsList"></ul>
+            <form id="decisionForm">
+                <div class="input-group">
+                    <input type="number" id="typeId" required placeholder=" ">
+                    <label for="typeId">Выбранный Type ID</label>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="descCatId" required placeholder=" ">
+                    <label for="descCatId">Выбранный Description Category ID</label>
+                </div>
+                <button type="submit" class="accent">Подтвердить решение</button>
+                <button type="button" id="skipOfferBtn">Пропустить товар</button>
+            </form>
+        </div>
+
+        <div id="submissionArea" class="card" style="display:none;">
+            <h2>Финальная отправка</h2>
+            <button id="submitToOzonBtn" disabled>Отправить в Ozon</button>
+        </div>
+        
+        <div id="ozonResultsArea" class="card results-card" style="display:none;">
+            <h2>Результаты отправки в Ozon</h2>
+            <p>ID задачи: <strong id="ozonTaskId"></strong></p>
+            <pre id="ozonTaskInfo"></pre>
+            <button id="refreshTaskInfoBtn" style="display:none;">Обновить информацию о задаче</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
