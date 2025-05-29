@@ -120,8 +120,9 @@ def _initialize_state(client_id: str, client_secret: str, feed_url: Optional[str
     # Determine XML file path
     xml_file_path = XML_FILE_PATH
     if feed_url:
+        logger.info(f"Downloading XML feed from URL: {feed_url}")
         try:
-            xml_file_path = download_xml_feed(feed_url)
+            download_xml_feed(feed_url, XML_FILE_PATH)
             APP_STATE["current_xml_file_path"] = xml_file_path
         except Exception as e:
             APP_STATE["status_message"] = f"Ошибка: {str(e)}"
@@ -129,7 +130,7 @@ def _initialize_state(client_id: str, client_secret: str, feed_url: Optional[str
             APP_STATE["is_initialized"] = False
             return False
     
-    _, xml_offers = parse_xml_feed(xml_file_path)
+    _, xml_offers = parse_xml_feed(XML_FILE_PATH)
     if xml_offers is None:
         APP_STATE["status_message"] = "Ошибка: Не удалось разобрать XML фид."
         APP_STATE["error_message"] = "Не удалось разобрать XML фид."
@@ -231,6 +232,20 @@ async def start_processing(request_params: StartProcessingRequest):
     APP_STATE["feed_offset"] = request_params.feed_offset if request_params.feed_offset is not None else FEED_OFFSET
     APP_STATE["max_size"] = request_params.max_items if request_params.max_items is not None else MAX_SIZE
     APP_STATE["keyword_filter"] = request_params.keyword if request_params.keyword else KEYWORD_FILTER
+    
+    # # If url to feed is provided, download it
+    # if request_params.feed_url:
+    #     if not request_params.feed_url.startswith("http"):
+    #         raise HTTPException(status_code=400, detail="Некорректный URL фида. Должен начинаться с 'http' или 'https'.")
+    #     APP_STATE["current_xml_file_path"] = None
+    #     logger.info(f"Downloading XML feed from URL: {request_params.feed_url}")
+    #     if not download_xml_feed(request_params.feed_url):
+    #         APP_STATE["status_message"] = "Ошибка: Не удалось загрузить XML фид."
+    #         APP_STATE["error_message"] = "Не удалось загрузить XML фид по указанному URL."
+    #         raise HTTPException(status_code=500, detail=APP_STATE["error_message"])
+    # else:
+    #     # Use default XML file path if no feed URL is provided
+    #     APP_STATE["current_xml_file_path"] = XML_FILE_PATH
     
     if not _initialize_state(
         client_id=request_params.client_id,

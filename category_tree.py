@@ -40,18 +40,14 @@ def get_category_tree(lang: str):
         print("Failed to decode JSON response.")
         return None
     
-def main():
-    print("Attempting to retrieve category tree...")
-    lang = "RU"  # Example language code
-    category_tree_data = get_category_tree(lang)
+print("Attempting to retrieve category tree...")
+lang = "RU"  # Example language code
+category_tree_data = get_category_tree(lang)
 
-    if category_tree_data:
-        print("Category Tree Data:")
-        # Save as JSON file
-        with open("category_tree.json", "w", encoding="utf-8") as f:
-            json.dump(category_tree_data, f, ensure_ascii=False, indent=4)
-    else:
-        print("Failed to retrieve category tree data.")
-        
-if __name__ == "__main__":
-    main()
+if category_tree_data:
+    print("Category Tree Data:")
+    # Save as JSON file
+    with open("category_tree.json", "w", encoding="utf-8") as f:
+        json.dump(category_tree_data, f, ensure_ascii=False, indent=4)
+else:
+    print("Failed to retrieve category tree data.")

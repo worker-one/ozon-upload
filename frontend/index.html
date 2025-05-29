@@ -19,11 +19,11 @@
             </div>
             <div class="input-group">
                 <input type="password" id="clientSecret" placeholder=" " required>
-                <label for="clientSecret">Client Secret</label>
+                <label for="clientSecret">API key</label>
             </div>
             <div class="input-group">
                 <input type="url" id="feedUrl" placeholder=" ">
-                <label for="feedUrl">URL фида XML (опционально)</label>
+                <label for="feedUrl">URL фида XML в формате Яндекс.Маркет DBS, FBY, FBS</label>
             </div>
             <div class="input-group">
                 <input type="number" id="feedOffset" value="0" placeholder=" ">
@@ -52,7 +52,6 @@
         <div id="decisionArea" class="card decision-card" style="display:none;">
             <h2>Требуется решение</h2>
             <p>Товар: <strong id="offerName"></strong> (ID: <span id="offerId"></span>)</p>
-            <p>Лучшее совпадение: <span id="similarityScore"></span></p>
             <h3>Предлагаемые категории:</h3>
             <ul id="suggestionsList"></ul>
             <form id="decisionForm">

@@ -1,3 +1,8 @@
 # Dependencies for the ozon-api project
 fuzzywuzzy>=0.18.0
 python-Levenshtein>=0.12.2  # Optional, but provides speedup for fuzzywuzzy
+joblib>=1.0.1
+scikit-learn>=0.24.2
+requests>=2.25.1
+uvicorn>=0.14.0
+fastapi>=0.68.0

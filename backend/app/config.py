@@ -3,8 +3,8 @@ import logging
 DEFAULT_CLIENT_ID = "2760674"
 DEFAULT_CLIENT_SECRET = "d9e532ac-287a-4425-84ac-ddfa64b6cf02"
 API_URL = "https://api-seller.ozon.ru/v3/product/import"
-XML_FILE_PATH = "/home/verner/ozon-api/data/feed_example.xml"
-JSON_CATEGORY_TREE_PATH = "/home/verner/ozon-api/data/category_tree.json"
+XML_FILE_PATH = "./data/feed_example.xml"
+JSON_CATEGORY_TREE_PATH = "./data/category_tree.json"
 
 BRAND_ATTRIBUTE_ID = 85
 NAME_ATTRIBUTE_ID = 9048

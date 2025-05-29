@@ -33,14 +33,17 @@ def download_xml_feed(url: str, filepath: str):
     try:
         response = requests.get(url)
         response.raise_for_status()
-        with open(filepath, 'wb') as f:
-            f.write(response.content)
+        
+        # Check if it is tar file
+        with open(filepath, 'w') as f:
+            f.write(response.content.decode('utf-8'))
         logging.info(f"XML feed downloaded successfully to {filepath}")
     except requests.exceptions.RequestException as e:
         logging.error(f"Error downloading XML feed: {e}")
 
 def parse_xml_feed(filepath: str):
     # ...existing code from process_feed_v2.py: parse_xml_feed...
+    logging.info(f"Parsing XML feed from {filepath}")
     try:
         tree = ET.parse(filepath)
         root = tree.getroot()
