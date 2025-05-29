@@ -69,29 +69,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         startBtn.disabled = !!data.pending_decision_id;
 
+        // Always clear and update suggestions list when decision is required
         if (data.pending_decision_id && data.decision_details) {
             currentDecisionId = data.pending_decision_id;
             decisionArea.style.display = 'block';
             offerName.textContent = data.decision_details.name;
             offerId.textContent = data.decision_details.offer_id;
-            similarityScore.textContent = data.decision_details.current_similarity.toFixed(2);
-            
+
+            // Show similarity score if available
+            if (typeof data.decision_details.current_similarity === 'number') {
+                similarityScore.textContent = data.decision_details.current_similarity.toFixed(2);
+            } else {
+                similarityScore.textContent = '';
+            }
+
             suggestionsList.innerHTML = '';
-            if (data.decision_details.suggestions && data.decision_details.suggestions.length > 0) {
+            if (Array.isArray(data.decision_details.suggestions) && data.decision_details.suggestions.length > 0) {
                 data.decision_details.suggestions.forEach((s, index) => {
                     const li = document.createElement('li');
-                    li.innerHTML = `<span><b>${s.type_name}</b> (Уверенность: ${s.similarity ? s.similarity.toFixed(2) : 'Н/Д'})</span>`;
+                    li.innerHTML = `<span><b>${s.type_name}</b> (Уверенность: ${typeof s.similarity === 'number' ? s.similarity.toFixed(2) : 'Н/Д'})</span>`;
                     const useBtn = document.createElement('button');
                     useBtn.textContent = '✔️';
                     useBtn.onclick = () => {
                         typeIdInput.value = s.type_id;
-                        descCatIdInput.value = s.description_category_id || s.type_id;
+                        descCatIdInput.value = s.description_category_id; // Corrected: Use backend-resolved value directly
                     };
                     li.appendChild(useBtn);
                     suggestionsList.appendChild(li);
-                    if (index === 0) { 
+                    // Autofill the first suggestion
+                    if (index === 0) {
                         typeIdInput.value = s.type_id;
-                        descCatIdInput.value = s.description_category_id || s.type_id;
+                        descCatIdInput.value = s.description_category_id; // Corrected: Use backend-resolved value directly
                     }
                 });
             } else {
@@ -103,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
             decisionForm.querySelector('button[type="submit"]').disabled = false;
             skipOfferBtn.disabled = false;
             submissionArea.style.display = 'none';
-
         } else {
             decisionArea.style.display = 'none';
             currentDecisionId = null;
@@ -355,7 +362,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await fetchData('/processing-status');
             updateStatusUI(data);
         } catch (err) {
-            statusMessage.textContent = "Готово к запуску. Не удалось подключиться к серверу или получить начальный статус.";
+            if (statusMessage) {
+                statusMessage.textContent = "Готово к запуску. Не удалось подключиться к серверу или получить начальный статус.";
+            }
             console.warn("Не удалось получить начальный статус:", err.message);
             // Set a basic initial state for UI elements if backend is down
             statusArea.style.display = 'block';
