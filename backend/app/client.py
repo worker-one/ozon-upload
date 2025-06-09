@@ -2,7 +2,7 @@ import requests
 import json
 import logging
 from time import sleep
-from typing import List, Dict, Any, Optional
+from typing import Optional
 
 from .config import API_URL, DEFAULT_CLIENT_ID, DEFAULT_CLIENT_SECRET
 

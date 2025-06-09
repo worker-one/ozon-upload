@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxItemsInput = document.getElementById('maxItems');
     const keywordFilterInput = document.getElementById('keywordFilter');
     const startBtn = document.getElementById('startBtn');
+    const newUploadBtn = document.getElementById('newUploadBtn');
 
     // Status Area Elements
     const statusArea = document.getElementById('statusArea');
@@ -52,6 +53,49 @@ document.addEventListener('DOMContentLoaded', () => {
         errorDisplay.textContent = '';
         errorDisplay.style.display = 'none';
     }
+
+    function resetUIForNewUpload() {
+        // Hide dynamic areas
+        decisionArea.style.display = 'none';
+        submissionArea.style.display = 'none';
+        ozonResultsArea.style.display = 'none';
+
+        // Clear status area content, then set a new message
+        statusMessage.textContent = "Готово к новой загрузке. Введите конфигурацию и нажмите 'Начать обработку'.";
+        processedCount.textContent = '0';
+        // maxConfiguredItems will be updated by startBtn click
+        consideredCount.textContent = '0';
+        totalOffersInFeedSlice.textContent = '0';
+        itemsReady.textContent = '0';
+        statusArea.style.display = 'block'; // Keep status area visible with the new message
+
+        clearError();
+
+        // Reset internal state variables
+        currentDecisionId = null;
+        currentOzonTaskId = null;
+
+        // Enable config inputs and start button
+        clientIdInput.disabled = false;
+        clientSecretInput.disabled = false;
+        feedUrlInput.disabled = false;
+        feedOffsetInput.disabled = false;
+        maxItemsInput.disabled = false;
+        keywordFilterInput.disabled = false;
+        startBtn.disabled = false;
+
+        // Reset submission and Ozon results elements
+        submitToOzonBtn.disabled = true;
+        refreshTaskInfoBtn.style.display = 'none';
+        ozonTaskInfo.textContent = '';
+        ozonTaskId.textContent = '';
+
+        // Clear decision form inputs (optional, but good for a clean slate)
+        typeIdInput.value = '';
+        descCatIdInput.value = '';
+        suggestionsList.innerHTML = '';
+    }
+
 
     function updateStatusUI(data) {
         clearError();
@@ -213,6 +257,14 @@ document.addEventListener('DOMContentLoaded', () => {
         maxConfiguredItems.textContent = config.max_items;
 
         try {
+            // Disable config inputs during processing
+            clientIdInput.disabled = true;
+            clientSecretInput.disabled = true;
+            feedUrlInput.disabled = true;
+            feedOffsetInput.disabled = true;
+            maxItemsInput.disabled = true;
+            keywordFilterInput.disabled = true;
+
             const data = await fetchData('/start-processing', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -221,6 +273,13 @@ document.addEventListener('DOMContentLoaded', () => {
             updateStatusUI(data);
         } catch (err) {
             startBtn.disabled = false;
+            // Re-enable config inputs if start fails
+            clientIdInput.disabled = false;
+            clientSecretInput.disabled = false;
+            feedUrlInput.disabled = false;
+            feedOffsetInput.disabled = false;
+            maxItemsInput.disabled = false;
+            keywordFilterInput.disabled = false;
         }
     });
 
@@ -353,6 +412,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     refreshTaskInfoBtn.addEventListener('click', fetchOzonTaskInfo);
+
+    newUploadBtn.addEventListener('click', async () => {
+        try {
+            // Call backend to reset its session state
+            const statusData = await fetchData('/reset-session-state', { method: 'POST' });
+            // Reset UI based on the fresh state from backend or a predefined reset
+            resetUIForNewUpload(); // Visually reset the UI first
+            if (statusData) { // Then update with any specific messages from backend reset
+                statusMessage.textContent = statusData.status_message || "Готово к новой загрузке.";
+                // updateStatusUI(statusData); // Or, more comprehensively update based on response
+            }
+        } catch (error) {
+            console.error('Ошибка при сбросе сессии:', error);
+            showError('Не удалось сбросить сессию на сервере, но UI сброшен. ' + error.message);
+            resetUIForNewUpload(); // Ensure UI is reset even if backend call fails
+        }
+    });
 
     // Initial state setup:
     // Call updateStatusUI with a default-like state or fetch initial status

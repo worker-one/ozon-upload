@@ -102,6 +102,29 @@ def ensure_tfidf_initialized_if_needed(category_tree_root_data):
         if all_type_names:
             tfidf_comparer.fit(all_type_names)
 
+def _reset_session_state():
+    logger.info("Resetting session state.")
+    service_pending_decisions.clear()
+
+    APP_STATE["ozon_client"] = None # Will be re-created by start-processing
+    APP_STATE["all_xml_offers"] = []
+    APP_STATE["feed_offset"] = FEED_OFFSET # Reset to default
+    APP_STATE["keyword_filter"] = KEYWORD_FILTER # Reset to default
+    APP_STATE["max_size"] = MAX_SIZE # Reset to default
+    APP_STATE["current_offer_idx_in_all_xml"] = 0
+    APP_STATE["processed_item_count_for_api"] = 0
+    APP_STATE["items_for_api"] = []
+    APP_STATE["pending_decision_id"] = None
+    APP_STATE["status_message"] = "Сессия сброшена. Готово к новой конфигурации."
+    APP_STATE["ozon_submission_task_id"] = None
+    APP_STATE["ozon_task_info"] = None
+    APP_STATE["is_initialized"] = False # Crucial: requires new /start-processing
+    APP_STATE["error_message"] = None
+    APP_STATE["current_xml_file_path"] = XML_FILE_PATH # Reset to default
+    APP_STATE["client_id"] = None # Will be set by next /start-processing
+    APP_STATE["client_secret"] = None # Will be set by next /start-processing
+    # Category tree and TF-IDF model (if loaded) persist globally
+
 def _initialize_state(client_id: str, client_secret: str, feed_url: Optional[str] = None):
     # Store credentials for Ozon client
     APP_STATE["client_id"] = client_id
@@ -282,6 +305,11 @@ def get_processing_status():
         ozon_task_info=APP_STATE["ozon_task_info"],
         error_message=APP_STATE["error_message"]
     )
+
+@app.post("/reset-session-state", response_model=ProcessingStatusResponse)
+async def reset_session_state_endpoint():
+    _reset_session_state()
+    return get_processing_status()
 
 @app.post("/submit-decision/{decision_id:path}", response_model=ProcessingStatusResponse)
 async def submit_decision(decision_id: str, payload: DecisionPayload):
