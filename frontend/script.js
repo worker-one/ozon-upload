@@ -323,6 +323,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+            // If the submission was successful and no new decision is immediately pending,
+            // explicitly hide the decision area. updateStatusUI will confirm this.
+            if (!data.pending_decision_id) {
+                decisionArea.style.display = 'none';
+            }
             updateStatusUI(data);
         } catch (err) { 
             // If error, re-enable decision buttons if still in decision state
@@ -349,6 +354,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // URL encode the decision ID to handle special characters like slashes
             const encodedDecisionId = encodeURIComponent(decisionIdToSkip);
             const data = await fetchData(`/skip-offer/${encodedDecisionId}`, { method: 'POST' });
+            // If skipping was successful and no new decision is immediately pending,
+            // explicitly hide the decision area. updateStatusUI will confirm this.
+            if (!data.pending_decision_id) {
+                decisionArea.style.display = 'none';
+            }
             updateStatusUI(data);
         } catch (err) { 
             if (currentDecisionId === decisionIdToSkip && decisionArea.style.display === 'block') {
