@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_BASE_URL = "http://104.248.31.242:8000"; // Adjust if your backend runs elsewhere
+    const API_BASE_URL = "http://31.59.58.9:8500"; // Adjust if your backend runs elsewhere
 
     // Конфигурация Elements
     const clientIdInput = document.getElementById('clientId');
