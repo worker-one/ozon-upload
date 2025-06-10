@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_BASE_URL = "http://104.248.31.242:8000"; // Adjust if your backend runs elsewhere
+    const API_BASE_URL = "http://localhost:8000"; // Adjust if your backend runs elsewhere
 
     // Конфигурация Elements
     const clientIdInput = document.getElementById('clientId');
@@ -210,6 +210,8 @@ document.addEventListener('DOMContentLoaded', () => {
         submitToOzonBtn.disabled = true;
         // Decision form buttons are handled more specifically
 
+        console.log(`Fetching ${API_BASE_URL + url} with options:`, options);
+
         try {
             const response = await fetch(API_BASE_URL + url, options);
             if (!response.ok) {
@@ -312,6 +314,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Store the decision ID to ensure we're working with the correct one
         const decisionIdToSubmit = currentDecisionId;
         
+        // Hide decision area immediately to provide instant feedback
+        decisionArea.style.display = 'none';
+        statusMessage.textContent = "Обработка решения...";
+        
         decisionForm.querySelector('button[type="submit"]').disabled = true;
         skipOfferBtn.disabled = true;
 
@@ -346,6 +352,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Store the decision ID to ensure consistency
         const decisionIdToSkip = currentDecisionId;
+        
+        // Hide decision area immediately to provide instant feedback
+        decisionArea.style.display = 'none';
+        statusMessage.textContent = "Пропуск товара...";
         
         decisionForm.querySelector('button[type="submit"]').disabled = true;
         skipOfferBtn.disabled = true;
