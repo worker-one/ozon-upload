@@ -15,6 +15,26 @@ tfidf_comparer = TfidfComparer()
 # Store pending interactive decisions for web UI
 pending_interactive_decisions = {}
 
+def extract_quantity_in_pack(offer_name: str) -> int:
+    """
+    
+    К-Т Секретные Колесные Гайки 4Шт. С Ключом -> 4
+    
+
+    Args:
+        offer_name (str): _description_
+
+    Returns:
+        int: _description_
+    """
+    import re
+    # Match patterns like "4Шт", "4 шт", "4 шт.", "4 шт. в упаковке" etc.
+    match = re.search(r'(\d+)\s*шт', offer_name, re.IGNORECASE)
+    if match:
+        return int(match.group(1))
+    return 1  # Default to 1 if no quantity found
+    
+
 def load_category_tree(filepath):
     # ...existing code from process_feed_v2.py: load_category_tree...
     try:
@@ -302,6 +322,7 @@ def create_api_payload(offer, category_tree_root, web_callback=None, chosen_type
             offer_name = offer_name[:80].strip()
             #logging.warning(f"Offer {offer_data['id']}: Offer name truncated to 80 characters: '{offer_name}'")
 
+        quantity_in_pack = extract_quantity_in_pack(offer_name)
         item = {
             "attributes": [
                 {
@@ -322,7 +343,7 @@ def create_api_payload(offer, category_tree_root, web_callback=None, chosen_type
                 {
                     "id": QUANTIY,
                     "complex_id": 0,
-                    "values": [{"value": offer_data['count']}]
+                    "values": [{"value": quantity_in_pack}]
                 }
                 # {
                 #     "id": DANGER_CLASS,
@@ -356,3 +377,8 @@ def create_api_payload(offer, category_tree_root, web_callback=None, chosen_type
     except Exception as e:
         logging.error(f"Error processing offer {offer_data.get('id', 'N/A')}: {e}", exc_info=True)
         return None
+
+__all__ = [
+    # ...other exported names if any...
+    "extract_quantity_in_pack",
+]
